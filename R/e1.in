@@ -1,7 +1,0 @@
-source("c:/Users/erinm/rmpiFort/R/mpitest.R")
-source("c:/Users/erinm/rmpiFort/R/init1.R")
-source("c:/Users/erinm/rmpiFort/R/univ1.R")
-source("c:/Users/erinm/rmpiFort/R/fin1.R")
-source("c:/Users/erinm/rmpiFort/R/rank1.R")
-dyn.load("c:/Users/erinm/rmpiFort/src/rmpiFort.dll")
-mpitest()
