@@ -1,0 +1,613 @@
+      subroutine square(y,n)
+	  !DEC$ ATTRIBUTES DLLEXPORT :: square
+        implicit none
+
+        integer :: n,i
+        real :: x(1000),y(1000)
+        
+        open(unit=1,file="c:/Users/erinm/buzz.txt")
+        do i=1,n
+           read(1,*)x(i)
+           enddo
+           close(unit=1)
+
+        !$acc loop seq
+        do i=1,n
+           y(i) = 0.0
+           y(i) = x(i)+5.0
+           enddo
+        !$acc end loop
+
+           end subroutine square
+
+      subroutine test3(x,y,n)
+	  !DEC$ ATTRIBUTES DLLEXPORT :: test3
+	  real x(1000),y(1000)
+	  integer n,i 
+	  
+	
+		!$acc loop seq
+		do i=1,n
+		y(i) = 2.0*x(i) + 1.0
+		enddo 
+		!$acc end loop
+		
+		end subroutine test3
+		
+      subroutine alloc1(bigsum,n1,n2)
+	  !DEC$ ATTRIBUTES DLLEXPORT :: alloc1 
+       implicit none
+        integer :: n1,i,j,n2,k,n3,n4,n5,n4e
+        character(len=3) :: st_s,st_t,st_st
+
+        real,allocatable :: x(:),y(:),big1(:),big2(:),big3(:)
+        real :: bigsum(n2)
+        real,allocatable :: mat1(:,:)
+        real :: xx,xy,nug,v1
+        real :: sill_s,rg_s,nug_s,sill_t,rg_t,nug_t
+        real :: sill_st,rg_st,nug_st,stAni
+
+
+        open (unit=1,file="file1.txt")
+        read(1,200)st_s
+        read(1,200)st_t
+        read(1,200)st_st
+        read(1,*)sill_s
+        read(1,*)rg_s
+        read(1,*)nug_s
+        read(1,*)sill_t
+        read(1,*)rg_t
+        read(1,*)nug_t
+        read(1,*)sill_st
+        read(1,*)rg_st
+        read(1,*)nug_st
+        read(1,*)stAni
+        close(unit=1)
+
+
+200     format(a)
+225     format(f10.2)
+250     format(i5)
+
+        allocate(x(n1),y(n1))
+        open(unit=2,file="file2.txt")
+        do i=1,n1
+           read(2,*)x(i),y(i)
+           enddo
+        close(unit=2)   
+
+        
+
+
+        allocate(mat1(n1,n1))
+        !$acc loop seq
+        do i=1,n1
+           do j=1,n1
+   mat1(i,j) = (((x(i)-x(j))**2 + (y(i)-y(j))**2))**0.5
+
+
+
+        enddo
+        enddo
+        !$acc end loop
+
+          
+
+        deallocate(x,y)
+
+        allocate(big1(n2))
+        k=1
+           if(st_s == "Exp")then 
+
+         do i=1,n1
+            do j=1,n1
+             big1(k)=(sill_s)*(1 - exp(-mat1(i,j)/rg_s)) + nug_s
+             k=k+1
+             enddo
+          enddo
+
+
+          else if(st_s == "Gau") then
+
+             do i=1,n1
+                do j=1,n1
+                   
+
+
+                   big1(k)= (sill_s)*(1 - exp(-(mat1(i,j)/rg_s)**2)) + nug_s
+                   k=k+1
+
+              enddo
+
+
+            enddo
+    
+
+
+
+         else if(st_s == "Sph") then
+
+               do i=1,n1
+                  do j=1,n1
+                   if(mat1(i,j).ne.0)then
+                   if(mat1(i,j).le.rg_s)then
+                      xx = mat1(i,j)/rg_s
+                      xy = 1.5*xx - 0.5*(xx**3) 
+                      big1(k)= xy*(sill_s) + nug_s
+                      else
+                            big1(k)=1.0*(sill_s) + nug_s
+                      endif
+                      endif
+
+                      k=k+1
+                      enddo
+                 enddo
+
+                      
+              endif
+              k=1
+              allocate(big2(n2))
+           if(st_t == "Exp")then 
+
+         do i=1,n1
+            do j=1,n1
+
+             big2(k)=(sill_t)*(1 - exp(-mat1(i,j)/rg_t)) + nug_t
+             k=k+1
+
+
+             enddo
+          enddo
+
+
+          else if(st_t == "Gau") then
+
+             do i=1,n1
+                do j=1,n1
+                   
+
+
+
+                   big2(k)= (sill_t)*(1 - exp(-(mat1(i,j)/rg_t)**2)) + nug_t
+                   k=k+1
+              enddo
+
+
+            enddo
+    
+
+
+
+         else if(st_t == "Sph") then
+
+               do i=1,n1
+                  do j=1,n1
+				if(mat1(i,j).ne.0)then
+                   if(mat1(i,j).le.rg_t)then
+                      xx = mat1(i,j)/rg_t
+                      xy = 1.5*xx - 0.5*(xx**3) 
+                      big2(k)= xy*(sill_t) + nug_t
+                      else
+                               big2(k)=1.0*(sill_t) + nug_t
+                      endif
+                      endif
+                      k=k+1
+
+                      enddo
+                 enddo
+
+                      
+              endif
+
+              k=1
+              allocate(big3(n2))
+           if(st_st == "Exp")then 
+
+         do i=1,n1
+            do j=1,n1
+
+             big3(k)=(sill_st)*(1 - exp(-mat1(i,j)/rg_st)) + nug_st
+
+             k=k+1
+
+             enddo
+          enddo
+
+
+          else if(st_t == "Gau") then
+
+             do i=1,n1
+                do j=1,n1
+                   
+
+
+
+                   big3(k)= (sill_st)*(1 - exp(-(mat1(i,j)/rg_st)**2)) + nug_st
+                   k=k+1
+              enddo
+
+
+            enddo
+    
+
+
+
+         else if(st_st == "Sph") then
+
+               do i=1,n1
+                  do j=1,n1
+				if(mat1(i,j).ne.0)then
+                   if(mat1(i,j).le.rg_st)then
+                      xx = mat1(i,j)/rg_st
+                      xy = 1.5*xx - 0.5*(xx**3) 
+                      big3(k)= xy*(sill_st) + nug_st
+                      else
+                            big3(k)=1.0*(sill_st) + nug_st
+                      endif
+                      endif
+                      k=k+1
+
+
+                      enddo
+                 enddo
+
+                      
+              endif
+
+
+
+
+
+
+              do k=1,n2
+                   bigsum(k)= big1(k) + big2(k) + big3(k) 
+
+
+                   enddo
+
+
+                   deallocate(big1,big2,big3)
+
+        end subroutine alloc1
+
+
+      subroutine alloc2(bigsum,n1,n4)
+	  !DEC$ ATTRIBUTES DLLEXPORT :: alloc2
+        implicit none
+        integer :: n1,i,j,n2,k,n3,n4,n5,n4e
+        character(len=3) :: st_s,st_t,st_st
+
+        real,allocatable :: x(:),y(:),u(:),w(:)
+        real :: bigsum(n1*n4)
+
+        real,allocatable :: mat1(:,:),big1(:),big2(:),big3(:)
+        real :: xx,xy,nug,v1
+        real :: sill_s,rg_s,nug_s,sill_t,rg_t,nug_t
+        real :: sill_st,rg_st,nug_st,stAni
+
+
+        open (unit=1,file="file1.txt")
+        read(1,200)st_s
+        read(1,200)st_t
+        read(1,200)st_st
+        read(1,*)sill_s
+        read(1,*)rg_s
+        read(1,*)nug_s
+        read(1,*)sill_t
+        read(1,*)rg_t
+        read(1,*)nug_t
+        read(1,*)sill_st
+        read(1,*)rg_st
+        read(1,*)nug_st
+        read(1,*)stAni
+        close(unit=1)
+
+
+200     format(a)
+225     format(f10.2)
+250     format(i5)
+
+        allocate(u(n1),w(n1))
+        open(unit=2,file="file2.txt")
+        do i=1,n1
+           read(2,*)u(i),w(i)
+           enddo
+        close(unit=2)   
+
+        allocate(x(n4),y(n4))
+        open(unit=3,file="file4.txt")
+        do i=1,n4
+           read(3,*)x(i),y(i)
+           enddo
+        close(unit=3)
+
+
+        
+
+        allocate(mat1(n1,n4))
+
+        !$acc loop seq
+        do i=1,n1
+           do j=1,n4
+   mat1(i,j) = (((u(i)-x(j))**2 + (w(i)-y(j))**2))**0.5
+
+
+
+        enddo
+        enddo
+
+
+   !$acc end loop     
+
+        deallocate(u,w,x,y)
+        k=1
+        allocate(big1(n1*n4))
+           if(st_s == "Exp")then 
+
+         do i=1,n1
+            do j=1,n4
+             big1(k)=(sill_s)*(1 - exp(-mat1(i,j)/rg_s)) + nug_s
+             k=k+1
+             enddo
+          enddo
+
+
+          else if(st_s == "Gau") then
+
+             do i=1,n1
+                do j=1,n4
+                   
+
+
+                   big1(k)= (sill_s)*(1 - exp(-(mat1(i,j)/rg_s)**2)) + nug_s
+                   k=k+1
+              enddo
+
+
+            enddo
+    
+
+
+
+         else if(st_s == "Sph") then
+
+               do i=1,n1
+                  do j=1,n4
+
+				 if(mat1(i,j).ne.0)then
+                   if(mat1(i,j).le.rg_s)then
+                      xx = mat1(i,j)/rg_s
+                      xy = 1.5*xx - 0.5*(xx**3) 
+                      big1(k)= xy*(sill_s) + nug_s
+                      else
+                            big1(k)=1.0*(sill_s) + nug_s
+                      endif
+                      endif
+	
+                 
+
+                      enddo
+                 enddo
+
+                      
+              endif
+              k=1
+              allocate(big2(n1*n4))
+           if(st_t == "Exp")then 
+
+         do i=1,n1
+            do j=1,n4
+
+             big2(k)=(sill_t)*(1 - exp(-mat1(i,j)/rg_t)) + nug_t
+             k=k+1
+
+
+             enddo
+          enddo
+
+
+          else if(st_t == "Gau") then
+
+             do i=1,n1
+                do j=1,n4
+                   
+
+                   big2(k)= (sill_t)*(1 - exp(-(mat1(i,j)/rg_t)**2)) + nug_t
+                   k=k+1
+              enddo
+
+
+            enddo
+    
+
+
+
+         else if(st_t == "Sph") then
+
+               do i=1,n1
+                  do j=1,n4
+
+				   if(mat1(i,j).ne.0)then
+                   if(mat1(i,j).le.rg_t)then
+                      xx = mat1(i,j)/rg_t
+                      xy = 1.5*xx - 0.5*(xx**3) 
+                      big2(k)= xy*(sill_t) + nug_t
+                      else
+                            big2(k)=1.0*(sill_t) + nug_t
+                      endif
+                      endif
+                      k=k+1
+
+
+                      enddo
+                 enddo
+
+                      
+              endif
+
+              k=1
+              allocate(big3(n1*n4))
+           if(st_st == "Exp")then 
+
+         do i=1,n1
+            do j=1,n4
+
+             big3(k)=(sill_st)*(1 - exp(-mat1(i,j)/rg_st)) + nug_st
+             k=k+1
+
+
+             enddo
+          enddo
+
+
+          else if(st_t == "Gau") then
+
+             do i=1,n1
+                do j=1,n4
+                   
+
+                   big3(k)= (sill_st)*(1 - exp(-(mat1(i,j)/rg_st)**2)) + nug_st
+                   k=k+1
+              enddo
+
+
+            enddo
+    
+
+
+
+         else if(st_st == "Sph") then
+
+               do i=1,n1
+                  do j=1,n4
+
+				 if(mat1(i,j).ne.0)then
+                   if(mat1(i,j).le.rg_st)then
+                      xx = mat1(i,j)/rg_st
+                      xy = 1.5*xx - 0.5*(xx**3) 
+                      big3(k)= xy*(sill_st) + nug_st
+                      else
+                            big3(k)=1.0*(sill_st) + nug_st
+                      endif
+                      endif
+                      k=k+1
+
+
+                      enddo
+                 enddo
+
+                      
+              endif
+
+              n5=n1*n4
+             k=1
+             !$acc loop seq
+             do i=1,n5
+                   bigsum(i) = big1(i)+big2(i)+big3(i)
+
+
+                   enddo
+             !$acc end loop
+          deallocate(big1,big2,big3)         
+
+        end subroutine alloc2
+
+      subroutine test5(x,n)
+	  !DEC$ ATTRIBUTES DLLEXPORT :: test5
+	  real x(n)
+	  integer n,i 
+	  do i=1,n
+            x(i)=i
+            enddo
+
+	
+
+		
+		end subroutine test5
+
+      subroutine test6(bigsum,n1)
+	  !DEC$ ATTRIBUTES DLLEXPORT :: test6
+       implicit none
+        integer :: n1,i,j,n2,k,n3,n4,n5,n4e
+        character(len=3) :: st_s,st_t,st_st
+
+        real,allocatable :: x(:),y(:),u(:),w(:)
+        real :: bigsum(n1*n1)
+        real,allocatable :: mat1(:,:),mat2(:,:),mat3(:,:)
+        real :: xx,xy,nug,v1
+        real :: sill_s,rg_s,nug_s,sill_t,rg_t,nug_t
+        real :: sill_st,rg_st,nug_st,stAni
+
+
+        open (unit=1,file="file1.txt")
+        read(1,200)st_s
+        read(1,200)st_t
+        read(1,200)st_st
+        read(1,*)sill_s
+        read(1,*)rg_s
+        read(1,*)nug_s
+        read(1,*)sill_t
+        read(1,*)rg_t
+        read(1,*)nug_t
+        read(1,*)sill_st
+        read(1,*)rg_st
+        read(1,*)nug_st
+        read(1,*)stAni
+        close(unit=1)
+
+
+200     format(a)
+225     format(f10.2)
+250     format(i5)
+
+        allocate(x(n1),y(n1),u(n1),w(n1))
+        open(unit=2,file="file6.txt")
+        do i=1,n1
+           read(2,*)u(i),w(i)
+           x(i)=u(i)
+           y(i)=w(i)
+           enddo
+        close(unit=2)   
+
+        
+
+
+        allocate(mat1(n1,n1),mat2(n1,n1),mat3(n1,n1))
+        !$acc loop seq
+        do i=1,n1
+           do j=1,n1
+   mat3(i,j) = (((u(i)-x(j))**2 + (w(i)-y(j))**2))**0.5
+
+
+
+        enddo
+        enddo
+        !$acc end loop
+
+                       do i=1,n1
+                  do j=1,n1
+
+                      if(mat3(i,j).ne.0)then
+                      if(mat3(i,j).le.rg_s)then
+                      xx = mat3(i,j)/rg_s
+                      xy = 1.5*xx - 0.5*(xx**3) 
+                      mat3(i,j)= xy*(sill_s) + nug_s
+                      else
+                            mat3(i,j)=1.0*(sill_s) + nug_s
+                      endif
+                      endif
+
+
+                      enddo
+                 enddo
+                 k=1
+           do i=1,n1
+                do j=1,n1
+                   bigsum(k) = mat3(i,j) 
+                   k=k+1
+
+                   enddo
+                   enddo
+  
+
+        end subroutine test6

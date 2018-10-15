@@ -1,0 +1,3 @@
+library(rmpiFort)
+source("mpitest.R")
+mpitest()

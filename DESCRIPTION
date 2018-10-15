@@ -1,0 +1,13 @@
+Package: rmpiFort
+Title: Creating Fortran Wrappers for a Few MPI functions
+Version: 0.0.0.9000
+Authors@R: person("Erin", "Hodgess", email = "hodgesse@uhd.edu", role = c("aut", "cre"))
+Description: We decided to substitute Fortran instead of C for the MPI functions.  Our speed is much greater and consistency is better.
+Depends: R (>= 3.4.3)
+License: GPL 3
+Encoding: UTF-8
+LazyData: true
+NeedsCompilation: yes
+Packaged: 2018-05-31 13:32:07 UTC; hodgess
+Author: Erin Hodgess [aut, cre]
+Maintainer: Erin Hodgess <hodgesse@uhd.edu>

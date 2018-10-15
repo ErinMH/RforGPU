@@ -1,0 +1,22 @@
+FC= c:/progra~1/PGICE/win64/18.4/bin/pgf90 
+F77= c:/progra~1/PGICE/win64/18.4/bin/pgf90 
+FFLAGS= -Lc:/progra~1/PGICE/win64/18.4/lib/pgf90.dll -Lc:/progra~1/PGICE/win64/18.4/lib/pgc14.dll 
+FLIBS= -Lc:/progra~1/PGICE/win64/18.4/lib/pgf90.dll -Lc:/progra~1/PGICE/win64/18.4/lib/pgc14.dll 
+PKG_LIBS = $(LAPACK_LIBS) $(BLAS_LIBS) $(FLIBS) 
+MPI_FFLAGS= -Mmpi=msmpi
+SHLIB_FFLAGS= -Mmakedll 
+CUDA_FFLAGS=-acc -Minfo=accel -Mlarge_arrays -Lc:/progra~1/PGICE/win64/18.4/lib/pgf90.dll -Lc:/progra~1/PGICE/win64/18.4/lib/pgc14.dll 
+DLLCUDA_FFLAGS=-ta=tesla:nordc   -Lc:/progra~1/PGICE/win64/18.4/lib/acc_init_link_cuda.obj    -Lc:/progra~1/PGICE/win64/18.4/lib/libaccapi.lib   -Lc:/progra~1/PGICE/win64/18.4/lib/libaccg.lib   -Lc:/progra~1/PGICE/win64/18.4/lib/libaccn.lib   -Lc:/progra~1/PGICE/win64/18.4/lib/libaccg2.lib   -Lc:/progra~1/PGICE/win64/18.4/lib/libcudadevice.lib   -Lc:/progra~1/PGICE/win64/18.4/lib/pgc14.lib   -Lc:/progra~1/PGICE/win64/18.4/lib/libnspgc.lib  -defaultlib:legacy_stdio_definitions -defaultlib:oldnames -Lc:/progra~1/PGICE/win64/18.4/lib/pgf90.dll -Lc:/progra~1/PGICE/win64/18.4/lib/pgc14.dll 
+
+
+rmpiFort.obj: rmpiFort.f90
+	$(FC) $(FFLAGS) $(MPI_FFLAGS) -c rmpiFort.f90 -o rmpiFort.obj  -m64
+	$(FC) $(CUDA_FFLAGS) $(DLLCUDA_FFLAGS) -c test4.f90 -o test4.obj -m64
+	$(FC) $(SHLIB_FFLAGS) $(FFLAGS) $(MPI_FFLAGS) $(CUDA_FFLAGS) -o rmpiFort.dll test4.obj rmpiFort.obj  -m64
+
+
+
+ 
+
+
+
